@@ -124,6 +124,7 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "ss01", "cv02", "cv03", "cv04";
+    overflow-x: hidden;
   }
   html {
     @apply font-sans;
@@ -139,10 +140,27 @@ select {
 }
 
 input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
   display: block;
   inline-size: 100%;
   max-inline-size: 100%;
   min-inline-size: 0;
+  overflow: hidden;
+  text-align: left;
+}
+
+input[type="date"]::-webkit-date-and-time-value {
+  inline-size: 100%;
+  min-inline-size: 0;
+  margin: 0;
+  text-align: left;
+}
+
+input[type="date"]::-webkit-datetime-edit {
+  display: block;
+  min-width: 0;
+  padding: 0;
 }
 
 .date-input-row > input[type="date"] {
