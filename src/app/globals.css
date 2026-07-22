@@ -142,23 +142,32 @@ select {
 input[type="date"] {
   -webkit-appearance: none;
   appearance: none;
-  display: block;
+  display: flex;
+  align-items: center;
   inline-size: 100%;
+  line-height: 1.5rem;
   max-inline-size: 100%;
   min-inline-size: 0;
   overflow: hidden;
+  padding-block: 0;
   text-align: left;
 }
 
 input[type="date"]::-webkit-date-and-time-value {
+  display: flex;
+  align-items: center;
+  block-size: 100%;
   inline-size: 100%;
+  line-height: 1.5rem;
   min-inline-size: 0;
   margin: 0;
   text-align: left;
 }
 
 input[type="date"]::-webkit-datetime-edit {
-  display: block;
+  display: flex;
+  align-items: center;
+  block-size: 100%;
   min-width: 0;
   padding: 0;
 }
