@@ -226,7 +226,7 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col bg-[#f7f8fa] text-slate-950 transition-colors duration-150 dark:bg-[#111923] dark:text-slate-100">
+    <main className="flex min-h-screen min-w-0 flex-col overflow-x-hidden bg-[#f7f8fa] text-slate-950 transition-colors duration-150 dark:bg-[#111923] dark:text-slate-100">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.22 }} className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
         <header className="flex items-start justify-between gap-3 pb-3">
           <div><div className="flex items-center gap-2"><Pill className="size-4 text-teal-700 dark:text-teal-400" /><p className="text-base font-medium tracking-[-0.02em]">IsoTrack</p></div>
