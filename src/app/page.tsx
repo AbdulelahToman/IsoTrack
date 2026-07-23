@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CalendarDays, CirclePlus, Moon, Pill, Sun, Trash2 } from "lucide-react";
 
@@ -14,6 +14,56 @@ type PeriodErrors = { dose?: string; start?: string; end?: string };
 const DAY_MS = 86_400_000;
 const doseOptions = [20, 30, 40, 50, 60];
 const dailyDoseOptions = [10, 20, 30, 40, 50, 60, 70, 80];
+const progressTransition = { type: "spring" as const, stiffness: 220, damping: 27 };
+
+function ProgressValueBubble({ position, value, tone }: { position: number; value: string; tone: "neutral" | "target" | "high" }) {
+  const bubbleRef = useRef<HTMLDivElement>(null);
+  const [placement, setPlacement] = useState<{ bubbleLeft: number; pointerLeft: number } | null>(null);
+
+  useLayoutEffect(() => {
+    const bubble = bubbleRef.current;
+    const track = bubble?.parentElement;
+    if (!bubble || !track) return;
+
+    const updatePlacement = () => {
+      const trackWidth = track.getBoundingClientRect().width;
+      const bubbleWidth = bubble.getBoundingClientRect().width;
+      const indicatorLeft = trackWidth * position / 100;
+      const edgeInset = 8;
+      const bubbleLeft = Math.min(trackWidth - edgeInset - bubbleWidth / 2, Math.max(edgeInset + bubbleWidth / 2, indicatorLeft));
+      const pointerLeft = Math.min(bubbleWidth - 4, Math.max(4, indicatorLeft - bubbleLeft + bubbleWidth / 2));
+      setPlacement((current) => current?.bubbleLeft === bubbleLeft && current.pointerLeft === pointerLeft ? current : { bubbleLeft, pointerLeft });
+    };
+
+    updatePlacement();
+    const observer = new ResizeObserver(updatePlacement);
+    observer.observe(track);
+    observer.observe(bubble);
+    return () => observer.disconnect();
+  }, [position, value]);
+
+  const toneClass = tone === "target" ? "bg-emerald-600 text-white" : tone === "high" ? "bg-red-500 text-white" : "bg-neutral-700 text-white";
+  const pointerClass = tone === "target" ? "bg-emerald-600" : tone === "high" ? "bg-red-500" : "bg-neutral-700";
+
+  return (
+    <motion.div
+      ref={bubbleRef}
+      initial={false}
+      animate={{ left: placement?.bubbleLeft ?? `${position}%` }}
+      transition={progressTransition}
+      className={`absolute bottom-[calc(50%+12px)] z-20 -translate-x-1/2 whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-medium ${toneClass}`}
+    >
+      {value}
+      <motion.span
+        aria-hidden="true"
+        initial={false}
+        animate={{ left: placement?.pointerLeft ?? "50%" }}
+        transition={progressTransition}
+        className={`absolute -bottom-1 size-2 -translate-x-1/2 rotate-45 ${pointerClass}`}
+      />
+    </motion.div>
+  );
+}
 
 function DoseSelect({ value, label, autoFocus, invalid, onChange }: {
   value: number | "";
@@ -197,7 +247,6 @@ export default function Home() {
   const rulerPosition = Math.min(100, Math.max(0, (dosePerKg / 150) * 90));
   const overageWidth = Math.max(0, rulerPosition - 90);
   const progressTone = dosePerKg < 120 ? "neutral" : dosePerKg <= 150 ? "target" : "high";
-  const indicatorClass = progressTone === "target" ? "bg-emerald-600 text-white" : progressTone === "high" ? "bg-red-500 text-white" : "bg-neutral-700 text-white";
   const indicatorRingClass = progressTone === "target" ? "border-emerald-500" : progressTone === "high" ? "border-red-500" : "border-white";
 
   const updatePeriod = useCallback((id: number, field: keyof Omit<DosePeriod, "id">, value: string | number) => {
@@ -257,9 +306,9 @@ export default function Home() {
                 <div className="absolute inset-y-0 left-[72%] w-[18%] bg-emerald-200 dark:bg-emerald-500/40" />
                 <div className="absolute left-[72%] top-1/2 h-4 w-px -translate-y-1/2 bg-emerald-500" />
                 <div className="absolute left-[90%] top-1/2 h-4 w-px -translate-y-1/2 bg-emerald-500" />
-                <motion.div animate={{ width: `${overageWidth}%` }} transition={{ type: "spring", stiffness: 220, damping: 27 }} className="absolute inset-y-0 left-[90%] bg-red-300 dark:bg-red-500/60" />
-                <motion.div animate={{ left: `${rulerPosition}%` }} transition={{ type: "spring", stiffness: 220, damping: 27 }} className="absolute top-1/2 z-10 size-4 -translate-x-1/2 -translate-y-1/2">
-                  <div className={`absolute bottom-[calc(100%+4px)] left-1/2 -translate-x-1/2 whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-medium ${indicatorClass}`}>{numericWeight > 0 ? dosePerKg.toFixed(1) : "—"}</div>
+                <motion.div animate={{ width: `${overageWidth}%` }} transition={progressTransition} className="absolute inset-y-0 left-[90%] bg-red-300 dark:bg-red-500/60" />
+                <ProgressValueBubble position={rulerPosition} tone={progressTone} value={numericWeight > 0 ? dosePerKg.toFixed(1) : "—"} />
+                <motion.div animate={{ left: `${rulerPosition}%` }} transition={progressTransition} className="absolute top-1/2 z-10 size-4 -translate-x-1/2 -translate-y-1/2">
                   <div className={`size-4 rounded-full border-[3px] bg-[#9CA3AF] shadow-sm ${indicatorRingClass}`} />
                 </motion.div>
               </div>
