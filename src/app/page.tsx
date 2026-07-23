@@ -194,9 +194,11 @@ export default function Home() {
   const dosePerKg = numericWeight > 0 ? cumulativeDose / numericWeight : 0;
   const remaining120 = Math.max(0, target120 - cumulativeDose);
   const remaining150 = Math.max(0, target150 - cumulativeDose);
-  const rulerPosition = Math.min(100, Math.max(0, (dosePerKg / 150) * 100));
+  const rulerPosition = Math.min(100, Math.max(0, (dosePerKg / 150) * 90));
+  const overageWidth = Math.max(0, rulerPosition - 90);
   const progressTone = dosePerKg < 120 ? "neutral" : dosePerKg <= 150 ? "target" : "high";
-  const indicatorClass = progressTone === "target" ? "bg-emerald-600 text-white" : progressTone === "high" ? "bg-orange-500 text-white" : "bg-slate-800 text-white";
+  const indicatorClass = progressTone === "target" ? "bg-emerald-600 text-white" : progressTone === "high" ? "bg-red-500 text-white" : "bg-neutral-700 text-white";
+  const indicatorRingClass = progressTone === "target" ? "border-emerald-500" : progressTone === "high" ? "border-red-500" : "border-white";
 
   const updatePeriod = useCallback((id: number, field: keyof Omit<DosePeriod, "id">, value: string | number) => {
     setPeriods((current) => current.map((period) => period.id === id ? { ...period, [field]: value } : period));
@@ -251,15 +253,17 @@ export default function Home() {
 
             <section aria-labelledby="progress-title" className="mt-6 border-t border-slate-200 pt-5 dark:border-neutral-700">
               <div className="flex items-center justify-between"><h3 id="progress-title" className="text-sm font-semibold">Progress</h3><span className="text-[11px] text-slate-400 dark:text-neutral-400">mg/kg</span></div>
-              <div className="relative mb-1 mt-10 h-1.5 rounded-full bg-slate-300 dark:bg-neutral-600">
-                <div className="absolute left-[80%] top-1/2 h-4 w-px -translate-y-1/2 bg-emerald-600" />
-                <div className="absolute inset-y-0 left-[80%] right-0 rounded-r-full bg-emerald-200" />
-                <motion.div animate={{ left: `${rulerPosition}%` }} transition={{ type: "spring", stiffness: 220, damping: 27 }} className="absolute top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
-                  <div className={`mb-1 rounded px-1.5 py-0.5 text-[10px] font-medium ${indicatorClass}`}>{numericWeight > 0 ? dosePerKg.toFixed(1) : "—"}</div>
-                  <div className={`mx-auto size-4 rounded-full border-[3px] border-white shadow-sm dark:border-neutral-900 ${progressTone === "target" ? "bg-emerald-600" : progressTone === "high" ? "bg-orange-500" : "bg-slate-700"}`} />
+              <div className="relative mb-1 mt-10 h-1.5 rounded-full bg-neutral-300 dark:bg-neutral-600">
+                <div className="absolute inset-y-0 left-[72%] w-[18%] bg-emerald-200 dark:bg-emerald-500/40" />
+                <div className="absolute left-[72%] top-1/2 h-4 w-px -translate-y-1/2 bg-emerald-500" />
+                <div className="absolute left-[90%] top-1/2 h-4 w-px -translate-y-1/2 bg-emerald-500" />
+                <motion.div animate={{ width: `${overageWidth}%` }} transition={{ type: "spring", stiffness: 220, damping: 27 }} className="absolute inset-y-0 left-[90%] bg-red-300 dark:bg-red-500/60" />
+                <motion.div animate={{ left: `${rulerPosition}%` }} transition={{ type: "spring", stiffness: 220, damping: 27 }} className="absolute top-1/2 z-10 size-4 -translate-x-1/2 -translate-y-1/2">
+                  <div className={`absolute bottom-[calc(100%+4px)] left-1/2 -translate-x-1/2 whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-medium ${indicatorClass}`}>{numericWeight > 0 ? dosePerKg.toFixed(1) : "—"}</div>
+                  <div className={`size-4 rounded-full border-[3px] bg-[#9CA3AF] shadow-sm ${indicatorRingClass}`} />
                 </motion.div>
               </div>
-              <div className="grid grid-cols-[1fr_auto_20%] text-[10px] text-slate-500 dark:text-neutral-400"><span>0</span><span className="text-emerald-700 dark:text-emerald-400">120</span><span className="text-right">150</span></div>
+              <div className="relative h-4 text-[10px] text-slate-500 dark:text-neutral-400"><span className="absolute left-0">0</span><span className="absolute left-[72%] -translate-x-1/2 text-emerald-700 dark:text-emerald-400">120</span><span className="absolute left-[90%] -translate-x-1/2 text-emerald-700 dark:text-emerald-400">150</span></div>
             </section>
 
             <section id="summary" aria-labelledby="summary-title" className="mt-5 scroll-mt-14 border-t border-slate-200 pt-5 dark:border-neutral-700">
