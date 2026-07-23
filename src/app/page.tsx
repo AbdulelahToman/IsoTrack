@@ -2,7 +2,7 @@
 
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { CalendarDays, CirclePlus, Minus, Moon, Pill, Sun, Trash2 } from "lucide-react";
+import { CalendarDays, CirclePlus, Moon, Pill, Sun, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -270,9 +270,12 @@ export default function Home() {
                 <SummaryMetric label="Remaining to 120" value={numericWeight > 0 ? Math.ceil(remaining120).toLocaleString() : "—"} unit="mg" />
                 <SummaryMetric label="Remaining to 150" value={numericWeight > 0 ? Math.ceil(remaining150).toLocaleString() : "—"} unit="mg" />
               </div>
-              <p className="mb-2 mt-5 text-[11px] text-slate-500 dark:text-neutral-400">Estimated days remaining · 120 / 150 mg/kg</p>
+              <div className="mb-2 mt-5">
+                <p className="text-[11px] text-slate-500 dark:text-neutral-400">Estimated days to cumulative dose targets</p>
+                <p className="mt-0.5 text-[10px] text-slate-400 dark:text-neutral-500">Assuming a constant daily dose from today.</p>
+              </div>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {doseOptions.map((dose) => <div key={dose} className="rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-neutral-600 dark:bg-[#2f2f2f]"><p className="text-[11px] text-slate-500 dark:text-neutral-400">{dose} mg/day</p><p className="mt-0.5 flex items-center gap-1.5 text-sm font-medium tabular-nums">{numericWeight > 0 ? <><span>{Math.ceil(remaining120 / dose)}</span><Minus className="size-3 text-slate-300 dark:text-neutral-600" /><span>{Math.ceil(remaining150 / dose)} d</span></> : <span>—</span>}</p></div>)}
+                {doseOptions.map((dose) => <div key={dose} className="rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-neutral-600 dark:bg-[#2f2f2f]"><p className="text-[11px] text-slate-500 dark:text-neutral-400">{dose} mg/day</p><div className="mt-1 space-y-0.5 text-[11px] font-medium leading-4 tabular-nums"><p><span className="text-slate-400 dark:text-neutral-500">120 mg/kg →</span> {numericWeight > 0 ? `${Math.ceil(remaining120 / dose)} days` : "—"}</p><p><span className="text-slate-400 dark:text-neutral-500">150 mg/kg →</span> {numericWeight > 0 ? `${Math.ceil(remaining150 / dose)} days` : "—"}</p></div></div>)}
               </div>
             </section>
 
