@@ -18,7 +18,7 @@ const progressTransition = { type: "spring" as const, stiffness: 220, damping: 2
 
 function ProgressValueBubble({ position, value, tone }: { position: number; value: string; tone: "neutral" | "target" | "high" }) {
   const bubbleRef = useRef<HTMLDivElement>(null);
-  const [placement, setPlacement] = useState<{ bubbleLeft: number; pointerLeft: number } | null>(null);
+  const [bubbleLeft, setBubbleLeft] = useState<number | null>(null);
 
   useLayoutEffect(() => {
     const bubble = bubbleRef.current;
@@ -30,9 +30,8 @@ function ProgressValueBubble({ position, value, tone }: { position: number; valu
       const bubbleWidth = bubble.getBoundingClientRect().width;
       const indicatorLeft = trackWidth * position / 100;
       const edgeInset = 8;
-      const bubbleLeft = Math.min(trackWidth - edgeInset - bubbleWidth / 2, Math.max(edgeInset + bubbleWidth / 2, indicatorLeft));
-      const pointerLeft = Math.min(bubbleWidth - 4, Math.max(4, indicatorLeft - bubbleLeft + bubbleWidth / 2));
-      setPlacement((current) => current?.bubbleLeft === bubbleLeft && current.pointerLeft === pointerLeft ? current : { bubbleLeft, pointerLeft });
+      const clampedLeft = Math.min(trackWidth - edgeInset - bubbleWidth / 2, Math.max(edgeInset + bubbleWidth / 2, indicatorLeft));
+      setBubbleLeft((current) => current === clampedLeft ? current : clampedLeft);
     };
 
     updatePlacement();
@@ -43,24 +42,16 @@ function ProgressValueBubble({ position, value, tone }: { position: number; valu
   }, [position, value]);
 
   const toneClass = tone === "target" ? "bg-emerald-600 text-white" : tone === "high" ? "bg-red-500 text-white" : "bg-neutral-700 text-white";
-  const pointerClass = tone === "target" ? "bg-emerald-600" : tone === "high" ? "bg-red-500" : "bg-neutral-700";
 
   return (
     <motion.div
       ref={bubbleRef}
       initial={false}
-      animate={{ left: placement?.bubbleLeft ?? `${position}%` }}
+      animate={{ left: bubbleLeft ?? `${position}%` }}
       transition={progressTransition}
       className={`absolute bottom-[calc(50%+12px)] z-20 -translate-x-1/2 whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-medium ${toneClass}`}
     >
       {value}
-      <motion.span
-        aria-hidden="true"
-        initial={false}
-        animate={{ left: placement?.pointerLeft ?? "50%" }}
-        transition={progressTransition}
-        className={`absolute -bottom-1 size-2 -translate-x-1/2 rotate-45 ${pointerClass}`}
-      />
     </motion.div>
   );
 }
